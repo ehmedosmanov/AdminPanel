@@ -7,9 +7,8 @@ export const BasketContext = createContext()
 export const BasketContextProvider = ({ children }) => {
   const [products, setProducts] = useState(null)
   const [basket, setBasket] = useState(null)
-  console.log(basket)
-  const { token } = useContext(AuthContext)
-  console.log(token)
+  const { token,user } = useContext(AuthContext)
+
   const getAllProducts = async () => {
     try {
       const products = await axios.get('http://localhost:8000/api/product')
@@ -21,36 +20,49 @@ export const BasketContextProvider = ({ children }) => {
   }
 
   const addToBasket = async (productId, userId) => {
-    console.log('productId', productId)
-    console.log('userId:', userId)
     try {
-      const response = await axios.post(
+      await axios.post(
         `http://localhost:8000/api/user/${userId}/basket`,
-        productId,
+        { productId },
         {
           headers: {
             Authorization: `Bearer ${token}`
           }
         }
       )
-      console.log(response)
-      const data = response.data
-      console.log('Add To Basket - Response:', data)
-      setBasket(data.user.basket)
+      basketData()
+      // console.log('Basket', data.user.basket)
+      // setBasket(data.user.basket)
     } catch (error) {
-      if (error.response && error.response.data) {
-        console.error('Error Adding to Basket:', error.response.data.message)
-      } else {
-        console.error('Error Adding to Basket:', error.message)
-      }
+      console.error('Error:', error.response?.data.message)
+
+    }
+  }
+
+  const basketData = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8000/api/user/${user.userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      const data = res.data.user.basket
+      setBasket(data)
+      console.log('salam',data);
+    } catch (error) {
+      console.error('Error:', error.response?.data.message)
+      
     }
   }
 
   useEffect(() => {
     getAllProducts()
-  }, [])
+    if (token && user.userId) {
+      basketData();
+    }
+  }, [token, user?.userId])
   return (
-    <BasketContext.Provider value={{ products, addToBasket }}>
+    <BasketContext.Provider value={{ products, addToBasket,basket }}>
       {children}
     </BasketContext.Provider>
   )
