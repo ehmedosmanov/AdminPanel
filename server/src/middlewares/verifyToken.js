@@ -7,14 +7,15 @@ export const verifyToken = async (req, res, next) => {
     res.user = { userId: decodeToken.userId, role: decodeToken.role }
     next()
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(401).json({ message: error.message })
   }
 }
 
 export const checkRole = roles => {
   return (req, res, next) => {
     const userRole = res.user.role
-
+    console.log('User Role:', userRole)
+    console.log('Allowed Roles:', roles)
     if (roles.includes(userRole)) {
       next()
     } else {

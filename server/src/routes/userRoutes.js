@@ -20,7 +20,7 @@ userRouter.get(
 userRouter.get(
   '/user/:id',
   verifyToken,
-  checkRole(['admin', 'superAdmin']),
+  checkRole(['admin', 'user', 'superAdmin']),
   getUser
 )
 userRouter.delete(

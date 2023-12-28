@@ -1,32 +1,22 @@
 import axios from 'axios'
 import React, { useContext, useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { AuthContext } from '../../components/context/GlobalContext'
+import {
+  AuthContext,
+  axiosInstance
+} from '../../components/context/GlobalContext'
 import Update from './Update'
 import UpdateBtn from './Update/button'
 
 const Admin = () => {
-  const [users, setUsers] = useState([])
   const [error, setError] = useState(null)
-  const { token } = useContext(AuthContext)
-  console.log(token)
-  const getAllUsers = async () => {
-    try {
-      const res = await axios.get('http://localhost:8000/api/user', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      const data = res.data.users
-      setUsers(data)
-    } catch (error) {
-      setError(error.response?.data.message)
-    }
-  }
+  const { token, adminUsers, getAllUsers } = useContext(AuthContext)
 
   const deleteUser = async id => {
+    console.log(id)
+
     try {
-      const res = await axios.delete(`http://localhost:8000/api/user/${id}`, {
+      const res = await axiosInstance.delete(`/user/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -37,9 +27,6 @@ const Admin = () => {
       console.error('Error deleting user:', error.response?.data.message)
     }
   }
-  useEffect(() => {
-    getAllUsers()
-  }, [])
 
   return (
     <div>
@@ -55,8 +42,8 @@ const Admin = () => {
           <th>Email</th>
           <th>Action</th>
         </tr>
-        {users
-          ? users.map(user => (
+        {adminUsers
+          ? adminUsers.map(user => (
               <tr key={user._id}>
                 <td>{user.username}</td>
                 <td>{user.email}</td>
