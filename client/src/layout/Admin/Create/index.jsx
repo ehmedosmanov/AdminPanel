@@ -1,10 +1,8 @@
 import React, { useContext } from 'react'
 import { useForm } from 'react-hook-form'
-import {
-  AuthContext,
-  axiosInstance
-} from '../../../components/context/GlobalContext'
+import { AuthContext } from '../../../components/context/GlobalContext'
 import axios from 'axios'
+import { api } from '../../../components/http'
 const Create = () => {
   const {
     register,
@@ -17,7 +15,7 @@ const Create = () => {
 
   const onSubmit = async data => {
     try {
-      const res = await axiosInstance.post('/user', data, {
+      const res = await api.post('/user', data, {
         headers: {
           Authorization: `Bearer ${token}`
         }

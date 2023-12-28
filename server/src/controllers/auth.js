@@ -95,7 +95,7 @@ const generateAccessToken = user => {
         role: user.role
       },
       process.env.JWT_SECRET,
-      { expiresIn: '2m' }
+      { expiresIn: '10s' }
     )
   } catch (error) {
     console.error('Error generating access token:', error)

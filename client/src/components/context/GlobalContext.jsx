@@ -1,14 +1,10 @@
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import axios from 'axios'
 import { jwtDecode } from 'jwt-decode' // Исправлено здесь
 import { useNavigate } from 'react-router-dom'
+import { api } from '../http'
 
 export const AuthContext = createContext()
-
-export const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000/api',
-  timeout: 5000
-})
 
 export const AuthContextProvider = ({ children }) => {
   const [user, setUser] = useState(
@@ -18,60 +14,7 @@ export const AuthContextProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token') || null)
   const [role, setRole] = useState(localStorage.getItem('role') || null)
   const [error, setError] = useState(null)
-
   const navigate = useNavigate()
-
-  axiosInstance.interceptors.request.use(
-    async config => {
-      const token = localStorage.getItem('token')
-      if (token) {
-        config.headers['Authorization'] = 'Bearer ' + token
-      }
-      return config
-    },
-    error => {
-      return Promise.reject(error)
-    }
-  )
-
-  axiosInstance.interceptors.response.use(
-    response => response,
-    async error => {
-      const originalRequest = error.config
-      if (error.response.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true
-        const access_token = await refreshAccessToken()
-        localStorage.setItem('token', access_token)
-        console.log('Updated Token:', access_token)
-        axiosInstance.defaults.headers['Authorization'] =
-          'Bearer ' + access_token
-        originalRequest.headers['Authorization'] = 'Bearer ' + access_token
-        return axiosInstance(originalRequest)
-      }
-      return Promise.reject(error)
-    }
-  )
-
-  async function refreshAccessToken() {
-    try {
-      const res = await axiosInstance.post(
-        '/auth/refresh',
-        {},
-        { withCredentials: true }
-      )
-      if (res.data) {
-        const newToken = res.data.token
-        axiosInstance.defaults.headers['Authorization'] = 'Bearer ' + newToken
-        console.log('salam', newToken)
-        return newToken
-      } else {
-        throw new Error('Refresh token failed')
-      }
-    } catch (error) {
-      console.error('Refresh token failed:', error)
-      return null
-    }
-  }
 
   const handleAuthentication = async res => {
     if (res.data) {
@@ -92,7 +35,7 @@ export const AuthContextProvider = ({ children }) => {
 
   const register = async userData => {
     try {
-      const res = await axiosInstance.post(
+      const res = await api.post(
         '/auth/register',
         {
           username: userData.username,
@@ -111,7 +54,7 @@ export const AuthContextProvider = ({ children }) => {
 
   const login = async userData => {
     try {
-      const res = await axiosInstance.post(
+      const res = await api.post(
         '/auth/login',
         {
           username: userData.username,
@@ -130,7 +73,7 @@ export const AuthContextProvider = ({ children }) => {
 
   const getAllUsers = async () => {
     try {
-      const res = await axiosInstance.get('/user', {
+      const res = await api.get('/user', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -144,7 +87,7 @@ export const AuthContextProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axiosInstance.post('/auth/logout', null, {
+      await api.post('/auth/logout', null, {
         withCredentials: true
       })
       localStorage.removeItem('user')
@@ -155,7 +98,9 @@ export const AuthContextProvider = ({ children }) => {
       setRole(null)
       setError(null)
       navigate('/')
-    } catch (error) {}
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   useEffect(() => {

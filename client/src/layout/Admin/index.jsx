@@ -1,12 +1,10 @@
 import axios from 'axios'
 import React, { useContext, useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import {
-  AuthContext,
-  axiosInstance
-} from '../../components/context/GlobalContext'
+import { AuthContext } from '../../components/context/GlobalContext'
 import Update from './Update'
 import UpdateBtn from './Update/button'
+import { api } from '../../components/http'
 
 const Admin = () => {
   const [error, setError] = useState(null)
@@ -16,7 +14,7 @@ const Admin = () => {
     console.log(id)
 
     try {
-      const res = await axiosInstance.delete(`/user/${id}`, {
+      const res = await api.delete(`/user/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
